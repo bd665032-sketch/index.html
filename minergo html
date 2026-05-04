@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Minar Go Expatriate | Development Foundation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;700;800&family=Inter:opsz,wght@14..32,300;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * { font-family: 'Inter', 'Noto Sans Bengali', sans-serif; }
+        body { background: linear-gradient(135deg, #0a0a2a 0%, #1a1a4a 100%); min-height: 100vh; }
+        .glass-card { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 30px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+        .btn-gold { background: linear-gradient(135deg, #D4AF37, #B8960C); color: #0a0a2a; font-weight: 700; transition: 0.3s; }
+        .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(212,175,55,0.3); }
+        .btn-blue { background: #002366; color: white; font-weight: 700; transition: 0.3s; }
+        .btn-blue:hover { background: #001a4d; transform: translateY(-2px); }
+        .premium-header { background: linear-gradient(135deg, #002366, #1a4c8c); border-bottom: 4px solid #D4AF37; }
+        .gold-border { border-top: 4px solid #D4AF37; }
+        .card-hover { transition: 0.3s; }
+        .card-hover:active { transform: scale(0.98); }
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #2d6a4f; color: white; padding: 10px 20px; border-radius: 40px; z-index: 1000; font-size: 13px; }
+        .signature-line { border-top: 2px solid #1e293b; width: 160px; margin-top: 6px; }
+        .logo-container { position: relative; display: inline-block; cursor: pointer; }
+        .logo-preview { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 3px solid #D4AF37; background: #002366; display: flex; align-items: center; justify-content: center; }
+        .logo-upload-btn { position: absolute; bottom: -5px; right: -5px; background: #D4AF37; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; color: #002366; font-size: 8px; cursor: pointer; }
+        .hidden-file-input { display: none; }
+        
+        /* Responsive Stats Cards - Mobile Small */
+        .stat-card { padding: 12px 8px; }
+        .stat-card p:first-child { font-size: 8px; }
+        .stat-card .stat-value { font-size: 18px; }
+        
+        @media (min-width: 768px) {
+            .stat-card { padding: 16px 12px; }
+            .stat-card p:first-child { font-size: 10px; }
+            .stat-card .stat-value { font-size: 24px; }
+        }
+        
+        /* Document Grid */
+        .doc-item { transition: 0.2s; }
+        .doc-item:active { transform: scale(0.97); }
+    </style>
+</head>
+<body>
+
+<!-- ==================== LOGIN/SIGNUP SECTION ==================== -->
+<div id="authSection" class="min-h-screen flex items-center justify-center p-4">
+    <div class="glass-card w-full max-w-md p-6 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#D4AF37] to-[#B8960C]"></div>
+        
+        <div class="text-center mb-5">
+            <div class="logo-container mx-auto">
+                <img id="headerLogo" class="logo-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23002366'/%3E%3Ctext x='50' y='67' font-size='45' text-anchor='middle' fill='%23D4AF37' font-weight='bold'%3EMG%3C/text%3E%3C/svg%3E" alt="Logo">
+                <div class="logo-upload-btn" onclick="document.getElementById('logoInput').click()"><i class="fa-solid fa-camera"></i></div>
+                <input type="file" id="logoInput" class="hidden-file-input" accept="image/*" onchange="uploadLogo(event)">
+            </div>
+            <h1 class="text-xl font-black text-[#002366] mt-2">MINAR GO <span class="text-[#D4AF37]">EXPATRIATE</span></h1>
+            <p class="text-[10px] text-gray-500">Development Foundation</p>
+            <p class="text-[8px] text-gray-400 mt-1 italic">United Experiences, Brighter Future</p>
+        </div>
+        
+        <div id="loginFormContainer">
+            <form id="loginForm" class="space-y-3">
+                <input type="email" id="loginEmail" class="w-full p-3 border rounded-xl text-sm" placeholder="Email Address" required>
+                <input type="password" id="loginPassword" class="w-full p-3 border rounded-xl text-sm" placeholder="Password" required>
+                <button type="submit" class="btn-gold w-full py-3 rounded-xl text-base">Login</button>
+            </form>
+            <p class="text-center text-xs mt-4 text-gray-600">No account? <button id="showSignupBtn" class="text-[#002366] font-bold">Sign Up</button></p>
+        </div>
+        
+        <div id="signupFormContainer" class="hidden">
+            <form id="signupForm" class="space-y-3">
+                <input type="text" id="signupName" class="w-full p-3 border rounded-xl text-sm" placeholder="Full Name" required>
+                <input type="email" id="signupEmail" class="w-full p-3 border rounded-xl text-sm" placeholder="Email Address" required>
+                <input type="password" id="signupPass" class="w-full p-3 border rounded-xl text-sm" placeholder="Password" required>
+                <button type="submit" class="btn-gold w-full py-3 rounded-xl text-base">Register</button>
+            </form>
+            <p class="text-center text-xs mt-4"><button id="showLoginBtn" class="text-[#002366] font-bold">← Back to Login</button></p>
+        </div>
+        
+        <div class="text-center mt-6 pt-3 border-t border-gray-200">
+            <p class="text-[8px] text-gray-400">© 2026 Minar Go Expatriate Development Foundation</p>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== MAIN DASHBOARD ==================== -->
+<div id="dashboardSection" class="hidden">
+    <!-- Header -->
+    <div class="premium-header text-white py-2 px-4 flex flex-wrap justify-between items-center gap-2 shadow-lg sticky top-0 z-20">
+        <div class="flex items-center gap-2">
+            <div class="logo-container">
+                <img id="dashboardLogo" class="w-8 h-8 rounded-full object-cover border-2 border-[#D4AF37] bg-[#002366]" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23002366'/%3E%3Ctext x='50' y='67' font-size='45' text-anchor='middle' fill='%23D4AF37' font-weight='bold'%3EMG%3C/text%3E%3C/svg%3E" alt="Logo">
+                <div class="logo-upload-btn" style="width: 16px; height: 16px; bottom: -3px; right: -3px;" onclick="document.getElementById('dashboardLogoInput').click()"><i class="fa-solid fa-camera text-[6px]"></i></div>
+                <input type="file" id="dashboardLogoInput" class="hidden-file-input" accept="image/*" onchange="dashboardUploadLogo(event)">
+            </div>
+            <div>
+                <h1 class="text-sm font-black">MINAR GO <span class="text-[#D4AF37]">EXPATRIATE</span></h1>
+                <p class="text-[7px] text-blue-200">Admin Panel</p>
+            </div>
+        </div>
+        <div class="flex gap-1">
+            <button id="backupBtn" class="bg-green-600 hover:bg-green-700 px-2 py-1 rounded-full text-[9px] font-bold"><i class="fa-brands fa-google mr-1"></i> Backup</button>
+            <button id="logoutBtn" class="bg-red-600 hover:bg-red-700 px-2 py-1 rounded-full text-[9px] font-bold"><i class="fa-solid fa-sign-out-alt mr-1"></i> Exit</button>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto p-3 pb-16 space-y-3">
+        <!-- Stats Cards - Responsive Small on Mobile -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div class="bg-gradient-to-r from-[#D4AF37] to-[#f9e076] rounded-xl shadow stat-card text-center">
+                <p class="font-black uppercase text-gray-700">Total</p>
+                <p class="font-black stat-value" id="totalDisplay">৳0</p>
+            </div>
+            <div class="bg-white rounded-xl shadow gold-border stat-card text-center">
+                <p class="font-bold uppercase text-gray-400">Distribution</p>
+                <p class="font-black text-green-600 stat-value">100%</p>
+            </div>
+            <div class="bg-white rounded-xl shadow gold-border stat-card text-center">
+                <p class="font-bold uppercase text-gray-400">Zakat</p>
+                <p class="font-black text-[#D4AF37] text-sm">Soon</p>
+            </div>
+            <div class="bg-white rounded-xl shadow flex items-center justify-center stat-card">
+                <button onclick="alert('📞 Support: +8801700000000')" class="btn-blue w-full py-1 text-[10px] rounded-lg">📞 Call</button>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3">
+            <!-- Left Panel -->
+            <div class="lg:col-span-5 space-y-3">
+                <!-- Deposit Form -->
+                <div class="bg-white p-3 rounded-xl shadow gold-border">
+                    <h3 class="text-sm font-black flex items-center gap-1 mb-2"><i class="fa-solid fa-coins text-[#D4AF37] text-xs"></i> New Deposit</h3>
+                    <form id="depositForm" class="space-y-2">
+                        <select id="memberSelect" class="w-full p-2 border rounded-lg text-xs bg-gray-50" required></select>
+                        <input type="number" id="amount" placeholder="Amount (TK)" value="5000" class="w-full p-2 border rounded-lg text-xs" required>
+                        <input type="date" id="entryDate" class="w-full p-2 border rounded-lg text-xs" required>
+                        <button type="submit" class="btn-gold w-full py-2 rounded-lg text-xs font-bold"><i class="fa-regular fa-floppy-disk mr-1"></i> Submit</button>
+                    </form>
+                </div>
+
+                <!-- Demand Letter -->
+                <div class="bg-white p-3 rounded-xl shadow border-l-4 border-l-[#002366]">
+                    <h3 class="text-sm font-black mb-2"><i class="fa-regular fa-file-lines mr-1 text-xs"></i> Demand Letter</h3>
+                    <div class="space-y-2">
+                        <input type="date" id="letterDate" class="w-full p-2 border rounded-lg text-xs">
+                        <input type="text" id="letterTo" placeholder="To (Company)" class="w-full p-2 border rounded-lg text-xs">
+                        <input type="text" id="letterSubject" placeholder="Subject" class="w-full p-2 border rounded-lg text-xs font-bold">
+                        <textarea id="letterBody" rows="2" placeholder="Body text..." class="w-full p-2 border rounded-lg text-xs"></textarea>
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" id="letterMobile" placeholder="Mobile" class="p-2 border rounded-lg text-xs">
+                            <input type="email" id="letterEmail" placeholder="Email" class="p-2 border rounded-lg text-xs">
+                        </div>
+                        <button id="generateLetterBtn" class="w-full bg-[#002366] text-white py-2 rounded-lg text-xs font-bold"><i class="fa-regular fa-file-pdf mr-1"></i> Generate PDF</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Summary Table -->
+            <div class="lg:col-span-7 bg-white p-3 rounded-xl shadow gold-border">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-sm font-black"><i class="fa-solid fa-table-list mr-1 text-xs"></i> Summary</h3>
+                    <button id="exportPdfBtn" class="btn-blue px-2 py-1 rounded-full text-[9px] font-bold"><i class="fa-regular fa-file-pdf mr-1"></i> Export</button>
+                </div>
+                <div class="overflow-x-auto rounded-lg border max-h-[300px] overflow-y-auto">
+                    <table class="w-full text-[10px]">
+                        <thead class="bg-[#002366] text-white sticky top-0">
+                            <tr><th class="p-2">Member</th><th class="p-2">Date</th><th class="p-2 text-right">Amount</th><th class="p-2 text-center">Action</th></tr>
+                        </thead>
+                        <tbody id="summaryTableBody"></tbody>
+                        <tfoot class="bg-gray-100 font-bold">
+                            <tr><td colspan="2" class="p-2">TOTAL COLLECTION</td><td id="footerTotal" class="p-2 text-right">৳0</td><td></td>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Member Management -->
+        <div class="bg-white p-3 rounded-xl shadow gold-border">
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="text-sm font-black"><i class="fa-solid fa-users mr-1 text-xs"></i> Members</h3>
+                <button id="addMemberBtn" class="border border-[#002366] text-[#002366] px-2 py-0.5 rounded-full text-[9px] font-bold">+ Add</button>
+            </div>
+            <div id="memberGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
+        </div>
+
+        <!-- Document Storage Section - NEW FEATURE -->
+        <div class="bg-white p-3 rounded-xl shadow gold-border">
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="text-sm font-black"><i class="fa-solid fa-folder-open mr-1 text-xs"></i> Document Storage</h3>
+                <button id="uploadDocBtn" class="bg-[#002366] text-white px-2 py-0.5 rounded-full text-[9px] font-bold"><i class="fa-solid fa-upload mr-1"></i> Upload</button>
+                <input type="file" id="docFileInput" class="hidden-file-input" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onchange="uploadDocument(event)">
+            </div>
+            <div id="documentList" class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[200px] overflow-auto"></div>
+            <p class="text-[8px] text-gray-400 text-center mt-2">Support: PDF, PNG, JPG, DOC</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ==================== DOCUMENT STORAGE ====================
+    let documents = [];
+
+    function loadDocuments() {
+        try {
+            const saved = localStorage.getItem('minar_documents');
+            if(saved) documents = JSON.parse(saved);
+            renderDocuments();
+        } catch(e) {}
+    }
+
+    function saveDocuments() {
+        try {
+            localStorage.setItem('minar_documents', JSON.stringify(documents));
+        } catch(e) {}
+    }
+
+    function uploadDocument(event) {
+        const file = event.target.files[0];
+        if(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const docData = {
+                    id: Date.now(),
+                    name: file.name,
+                    type: file.type,
+                    size: (file.size / 1024).toFixed(1) + " KB",
+                    data: e.target.result,
+                    date: new Date().toLocaleString()
+                };
+                documents.unshift(docData);
+                saveDocuments();
+                renderDocuments();
+                showToast(`✓ ${file.name} uploaded`);
+            };
+            reader.readAsDataURL(file);
+        }
+        document.getElementById('docFileInput').value = '';
+    }
+
+    function renderDocuments() {
+        const container = document.getElementById('documentList');
+        if(!container) return;
+        if(documents.length === 0) {
+            container.innerHTML = '<div class="col-span-3 text-center text-gray-400 text-[9px] py-3">No documents yet. Click Upload to add files.</div>';
+            return;
+        }
+        container.innerHTML = documents.map(doc => `
+            <div class="bg-gray-50 p-2 rounded-lg border doc-item">
+                <div class="flex items-center gap-1 mb-1">
+                    <i class="fa-solid ${doc.type.includes('pdf') ? 'fa-file-pdf text-red-500' : doc.type.includes('image') ? 'fa-file-image text-blue-500' : 'fa-file-word text-blue-600'} text-xs"></i>
+                    <span class="text-[9px] font-bold truncate flex-1">${doc.name.substring(0, 20)}</span>
+                    <button onclick="viewDocument(${doc.id})" class="text-[#002366] text-[8px]"><i class="fa-regular fa-eye"></i></button>
+                    <button onclick="deleteDocument(${doc.id})" class="text-red-500 text-[8px]"><i class="fa-regular fa-trash-can"></i></button>
+                </div>
+                <p class="text-[7px] text-gray-400">${doc.date}</p>
+            </div>
+        `).join('');
+    }
+
+    function viewDocument(id) {
+        const doc = documents.find(d => d.id === id);
+        if(doc) {
+            if(doc.type.includes('pdf')) {
+                const win = window.open();
+                win.document.write(`<iframe src="${doc.data}" width="100%" height="100%" style="border:none"></iframe>`);
+            } else {
+                const win = window.open();
+                win.document.write(`<img src="${doc.data}" style="max-width:100%; height:auto; margin-top:20px;">`);
+            }
+        }
+    }
+
+    function deleteDocument(id) {
+        if(confirm("Delete this document?")) {
+            documents = documents.filter(d => d.id !== id);
+            saveDocuments();
+            renderDocuments();
+            showToast("✓ Document deleted");
+        }
+    }
+
+    // ==================== LOGO STORAGE ====================
+    let currentLogoData = localStorage.getItem('foundationLogo') || null;
+    function uploadLogo(event) { handleLogoUpload(event, 'headerLogo'); }
+    function dashboardUploadLogo(event) { handleLogoUpload(event, 'dashboardLogo'); }
+    function handleLogoUpload(event, elementId) {
+        const file = event.target.files[0];
+        if(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentLogoData = e.target.result;
+                localStorage.setItem('foundationLogo', currentLogoData);
+                const img = document.getElementById(elementId);
+                if(img) img.src = currentLogoData;
+                const otherImg = document.getElementById(elementId === 'headerLogo' ? 'dashboardLogo' : 'headerLogo');
+                if(otherImg) otherImg.src = currentLogoData;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+    function loadLogo() {
+        if(currentLogoData) {
+            const headerLogo = document.getElementById('headerLogo');
+            const dashboardLogo = document.getElementById('dashboardLogo');
+            if(headerLogo) headerLogo.src = currentLogoData;
+            if(dashboardLogo) dashboardLogo.src = currentLogoData;
+        }
+    }
+
+    // ==================== CONFIGURATION ====================
+    const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbxmBGj8zPU6MX-okDrGA5x6hOfEUhb8gwSAyH9WtBPv1_Q7t0f69IN5gBMFQtZDHIiO7g/exec";
+    
+    const DEFAULT_MEMBERS = ["Mr. Dulal", "Mr. Omar Faruk", "Mr. Sulaiman badshah", "Mr. Abdul qayum", "Mr. Mohammed Jamshed", "Mr. Milad", "Mr. Ala uddin", "Mr. Shahid", "Mr. Shohag", "Mr. Abul Hussain", "Mr. Sakib", "Mr. Ronnie", "Mr. Jonye", "Mr. Aqib", "Mr. Shahid (Member)"];
+    
+    let members = [...DEFAULT_MEMBERS];
+    let records = [];
+
+    function loadData() {
+        try {
+            const savedMembers = localStorage.getItem('minar_members_final');
+            if(savedMembers && JSON.parse(savedMembers).length > 0) members = JSON.parse(savedMembers);
+            const savedRecords = localStorage.getItem('minar_records_final');
+            if(savedRecords) records = JSON.parse(savedRecords);
+        } catch(e) {}
+    }
+
+    function saveData() {
+        try {
+            localStorage.setItem('minar_members_final', JSON.stringify(members));
+            localStorage.setItem('minar_records_final', JSON.stringify(records));
+        } catch(e) {}
+    }
+
+    function showToast(msg) {
+        let t = document.createElement('div'); t.className = 'toast'; t.innerHTML = `<i class="fa-regular fa-circle-check mr-1"></i>${msg}`;
+        document.body.appendChild(t); setTimeout(() => t.remove(), 2000);
+    }
+
+    function updateUI() {
+        const memberSelect = document.getElementById('memberSelect');
+        if(memberSelect) memberSelect.innerHTML = members.map(m => `<option value="${m}">${m}</option>`).join('');
+        
+        const memberGrid = document.getElementById('memberGrid');
+        if(memberGrid) memberGrid.innerHTML = members.map((m, i) => `<div class="bg-gray-50 p-1.5 rounded-lg flex justify-between items-center border text-[9px]"><span class="font-semibold truncate">${m}</span><button onclick="deleteMember(${i})" class="text-red-500"><i class="fa-regular fa-trash-can text-[8px]"></i></button></div>`).join('');
+        
+        const summaryBody = document.getElementById('summaryTableBody');
+        if(summaryBody) summaryBody.innerHTML = records.map((r, i) => `<tr class="border-b"><td class="p-2">${r.name}</td><td class="p-2">${r.date}</td><td class="p-2 text-right">${r.amount.toLocaleString()} ৳</td><td class="p-2 text-center"><button onclick="deleteRecord(${i})" class="text-red-500"><i class="fa-regular fa-trash-can text-[8px]"></i></button></td></tr>`).join('');
+        
+        const total = records.reduce((s, r) => s + r.amount, 0);
+        const totalDisplay = document.getElementById('totalDisplay');
+        const footerTotal = document.getElementById('footerTotal');
+        if(totalDisplay) totalDisplay.innerText = `৳${total.toLocaleString()}`;
+        if(footerTotal) footerTotal.innerText = `৳${total.toLocaleString()}`;
+        saveData();
+    }
+
+    function addMember() { let n = prompt("Enter member name:"); if(n && n.trim()) { members.push(n.trim()); updateUI(); showToast(`✓ ${n} added`); } }
+    function deleteMember(i) { if(confirm("Delete member?")) { members.splice(i,1); updateUI(); } }
+    function deleteRecord(i) { if(confirm("Delete record?")) { records.splice(i,1); updateUI(); } }
+
+    document.getElementById('depositForm').onsubmit = (e) => {
+        e.preventDefault();
+        records.push({ name: document.getElementById('memberSelect').value, amount: parseFloat(document.getElementById('amount').value), date: document.getElementById('entryDate').value });
+        updateUI();
+        document.getElementById('amount').value = "5000";
+        document.getElementById('entryDate').valueAsDate = new Date();
+        showToast("✓ Deposit added");
+    };
+
+    async function backupToSheets() {
+        if(records.length === 0) { alert("No data to backup!"); return; }
+        let rows = records.map(r => [r.name, r.date, r.amount]);
+        rows.push(["TOTAL COLLECTION", "", records.reduce((s,r)=>s+r.amount,0)]);
+        rows.push(["Total Members", members.length, ""]);
+        rows.push(["Backup Date", new Date().toLocaleString(), ""]);
+        let payload = { sheetName: "MinarGo_Data", headers: ["Member Name", "Date", "Amount (TK)"], rows: rows };
+        let btn = document.getElementById('backupBtn');
+        let orig = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+        btn.disabled = true;
+        try {
+            await fetch(GOOGLE_SHEETS_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) });
+            alert("✅ Data sent to Google Sheets!");
+        } catch(e) { alert("❌ Backup failed"); }
+        finally { btn.innerHTML = orig; btn.disabled = false; }
+    }
+
+    function downloadSummaryPDF() {
+        if(records.length === 0) { alert("No data"); return; }
+        let { jsPDF } = window.jspdf; let doc = new jsPDF();
+        doc.setFontSize(16); doc.text("MINAR GO EXPATRIATE DEVELOPMENT FOUNDATION", 105, 20, {align:'center'});
+        doc.setFontSize(10); doc.text("Collection Summary Report", 105, 30, {align:'center'});
+        let tableData = records.map(r => [r.name, r.date, `৳${r.amount}`]);
+        let total = records.reduce((s,r)=>s+r.amount,0);
+        doc.autoTable({ startY: 40, head: [['Member', 'Date', 'Amount']], body: tableData, foot: [['TOTAL', '', `৳${total}`]], theme: 'striped', headStyles: { fillColor: [0,35,102] } });
+        doc.save("MinarGo_Report.pdf");
+        showToast("✓ PDF Downloaded");
+    }
+
+    async function generateDemandLetter() {
+        let to = document.getElementById('letterTo').value || "Sundow Properties LTD";
+        let sub = document.getElementById('letterSubject').value || "Application";
+        let body = document.getElementById('letterBody').value || "বিনীত নিবেদন...";
+        let mobile = document.getElementById('letterMobile').value || "+8801700000000";
+        let email = document.getElementById('letterEmail').value || "info@minargo.com";
+        let date = document.getElementById('letterDate').value ? new Date(document.getElementById('letterDate').value).toLocaleDateString('bn-BD') : new Date().toLocaleDateString('bn-BD');
+        let div = document.createElement('div'); div.style.width = '750px'; div.style.padding = '25px'; div.style.background = 'white'; div.style.fontFamily = "'Noto Sans Bengali', 'Inter'";
+        div.innerHTML = `<div style="text-align:center"><div style="background:#002366;height:4px"></div><h2 style="color:#002366;font-size:20px;">মিনার গো প্রবাসী উন্নয়ন ফাউন্ডেশন</h2><h3 style="color:#D4AF37;font-size:12px;">MINAR GO EXPATRIATE DEVELOPMENT FOUNDATION</h3></div><hr><p><strong>Date:</strong> ${date}</p><p><strong>To:</strong><br>${to}</p><p><strong>Subject:</strong> ${sub}</p><div style="background:#fefcf5;padding:10px;border-left:3px solid #D4AF37;">${body.replace(/\n/g,'<br>')}</div><p>Sincerely,</p><div style="display:flex;justify-content:space-between;margin-top:25px"><div><div class="signature-line"></div>Minar Go Foundation</div><div><div class="signature-line"></div>Sundow Properties LTD</div></div><div style="text-align:center;margin-top:12px;font-size:9px;">📞 ${mobile} | ✉️ ${email}</div><div style="text-align:center;font-size:7px;">© Minar Go Expatriate Development Foundation</div>`;
+        document.body.appendChild(div);
+        let canvas = await html2canvas(div); let pdf = new jspdf.jsPDF(); pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 210, (canvas.height*210)/canvas.width); pdf.save(`Demand_Letter.pdf`);
+        div.remove(); showToast("✓ PDF Generated");
+    }
+
+    // Auth System
+    function initAuth() {
+        document.getElementById('showSignupBtn').onclick = () => { document.getElementById('loginFormContainer').classList.add('hidden'); document.getElementById('signupFormContainer').classList.remove('hidden'); };
+        document.getElementById('showLoginBtn').onclick = () => { document.getElementById('signupFormContainer').classList.add('hidden'); document.getElementById('loginFormContainer').classList.remove('hidden'); };
+        document.getElementById('loginForm').onsubmit = (e) => {
+            e.preventDefault();
+            let stored = localStorage.getItem('minar_admin');
+            if(stored && JSON.parse(stored).email === document.getElementById('loginEmail').value && JSON.parse(stored).password === document.getElementById('loginPassword').value) {
+                sessionStorage.setItem('admin_logged', 'true');
+                showDashboard();
+            } else alert("Invalid credentials! Please register first.");
+        };
+        document.getElementById('signupForm').onsubmit = (e) => {
+            e.preventDefault();
+            localStorage.setItem('minar_admin', JSON.stringify({ name: document.getElementById('signupName').value, email: document.getElementById('signupEmail').value, password: document.getElementById('signupPass').value }));
+            sessionStorage.setItem('admin_logged', 'true');
+            showDashboard();
+        };
+    }
+
+    function showDashboard() {
+        document.getElementById('authSection').classList.add('hidden');
+        document.getElementById('dashboardSection').classList.remove('hidden');
+        loadData(); updateUI(); loadLogo(); loadDocuments();
+        document.getElementById('entryDate').valueAsDate = new Date();
+        document.getElementById('letterDate').valueAsDate = new Date();
+        document.getElementById('backupBtn').onclick = backupToSheets;
+        document.getElementById('exportPdfBtn').onclick = downloadSummaryPDF;
+        document.getElementById('generateLetterBtn').onclick = generateDemandLetter;
+        document.getElementById('addMemberBtn').onclick = addMember;
+        document.getElementById('uploadDocBtn').onclick = () => document.getElementById('docFileInput').click();
+        document.getElementById('logoutBtn').onclick = () => { 
+            sessionStorage.removeItem('admin_logged'); 
+            document.getElementById('dashboardSection').classList.add('hidden');
+            document.getElementById('authSection').classList.remove('hidden');
+        };
+        window.deleteMember = deleteMember; window.deleteRecord = deleteRecord;
+        window.viewDocument = viewDocument; window.deleteDocument = deleteDocument;
+    }
+
+    if(sessionStorage.getItem('admin_logged') === 'true') showDashboard(); else initAuth();
+</script>
+</body>
+</html>
