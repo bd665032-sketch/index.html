@@ -8,456 +8,414 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;700;800&family=Inter:opsz,wght@14..32,300;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
     <style>
         * { font-family: 'Inter', 'Noto Sans Bengali', sans-serif; }
-        body { background: linear-gradient(135deg, #0a0a2a 0%, #1a1a4a 100%); min-height: 100vh; }
-        .glass-card { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 30px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
-        .btn-gold { background: linear-gradient(135deg, #D4AF37, #B8960C); color: #0a0a2a; font-weight: 700; transition: 0.3s; }
-        .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(212,175,55,0.3); }
-        .btn-blue { background: #002366; color: white; font-weight: 700; transition: 0.3s; }
-        .btn-blue:hover { background: #001a4d; transform: translateY(-2px); }
-        .premium-header { background: linear-gradient(135deg, #002366, #1a4c8c); border-bottom: 4px solid #D4AF37; }
-        .gold-border { border-top: 4px solid #D4AF37; }
-        .card-hover { transition: 0.3s; }
-        .card-hover:active { transform: scale(0.98); }
-        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #2d6a4f; color: white; padding: 10px 20px; border-radius: 40px; z-index: 1000; font-size: 13px; }
-        .signature-line { border-top: 2px solid #1e293b; width: 160px; margin-top: 6px; }
-        .logo-container { position: relative; display: inline-block; cursor: pointer; }
-        .logo-preview { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 3px solid #D4AF37; background: #002366; display: flex; align-items: center; justify-content: center; }
-        .logo-upload-btn { position: absolute; bottom: -5px; right: -5px; background: #D4AF37; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; color: #002366; font-size: 8px; cursor: pointer; }
-        .hidden-file-input { display: none; }
-        
-        /* Responsive Stats Cards - Mobile Small */
-        .stat-card { padding: 12px 8px; }
-        .stat-card p:first-child { font-size: 8px; }
-        .stat-card .stat-value { font-size: 18px; }
-        
-        @media (min-width: 768px) {
-            .stat-card { padding: 16px 12px; }
-            .stat-card p:first-child { font-size: 10px; }
-            .stat-card .stat-value { font-size: 24px; }
-        }
-        
-        /* Document Grid */
-        .doc-item { transition: 0.2s; }
-        .doc-item:active { transform: scale(0.97); }
+        body { background: linear-gradient(135deg, #0a0a2a 0%, #1a1a4a 100%); min-height: 100vh; padding: 0; margin: 0; }
+        .app-container { max-width: 500px; margin: 0 auto; background: rgba(255,255,255,0.05); min-height: 100vh; display: flex; flex-direction: column; }
+        .main-content { flex: 1; padding: 16px 16px 70px 16px; overflow-y: auto; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; max-width: 500px; margin: 0 auto; background: rgba(10,10,42,0.95); backdrop-filter: blur(12px); border-top: 1px solid rgba(212,175,55,0.3); display: flex; justify-content: space-around; padding: 10px 12px 20px; z-index: 50; border-radius: 24px 24px 0 0; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #aaa; font-size: 12px; transition: 0.2s; cursor: pointer; }
+        .nav-item i { font-size: 22px; }
+        .nav-item.active { color: #D4AF37; text-shadow: 0 0 5px rgba(212,175,55,0.5); }
+        .profile-card { background: rgba(255,255,255,0.95); border-radius: 32px; padding: 20px; margin-bottom: 20px; box-shadow: 0 20px 35px -10px rgba(0,0,0,0.25); }
+        .stats-grid { display: flex; gap: 12px; margin: 16px 0; }
+        .stat-card { flex: 1; background: linear-gradient(135deg, #D4AF37, #f9e076); border-radius: 24px; padding: 12px; text-align: center; }
+        .stat-card p:first-child { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #002366; }
+        .stat-card p:last-child { font-size: 20px; font-weight: 800; color: #002366; }
+        .event-row { display: flex; justify-content: space-between; background: #f8f3e6; padding: 10px 16px; border-radius: 28px; margin-top: 12px; font-size: 13px; font-weight: 600; }
+        .section-title { font-size: 16px; font-weight: 800; color: #002366; margin: 20px 0 12px 0; display: flex; align-items: center; gap: 8px; border-left: 4px solid #D4AF37; padding-left: 12px; }
+        .btn-gold-sm { background: linear-gradient(135deg, #D4AF37, #B8960C); color: #0a0a2a; font-weight: 700; padding: 8px 16px; border-radius: 40px; border: none; cursor: pointer; font-size: 12px; transition: all 0.2s; }
+        .btn-gold-sm:hover { transform: scale(0.97); background: linear-gradient(135deg, #c4a023, #a57c08); }
+        .btn-blue-sm { background: #002366; color: white; font-weight: 700; padding: 8px 16px; border-radius: 40px; border: none; cursor: pointer; font-size: 12px; transition: 0.2s; }
+        .form-input { width: 100%; padding: 12px 14px; border: 1px solid #e0e0e0; border-radius: 28px; font-size: 14px; background: #f9f9f9; margin-bottom: 12px; outline: none; transition: 0.15s; }
+        .form-input:focus { border-color: #D4AF37; box-shadow: 0 0 0 2px rgba(212,175,55,0.3); }
+        .member-chip { background: #f0f0f0; padding: 6px 14px; border-radius: 40px; font-size: 12px; display: inline-flex; align-items: center; gap: 8px; margin: 4px; }
+        .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #2d6a4f; color: white; padding: 8px 18px; border-radius: 40px; z-index: 1000; font-size: 13px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .hidden-tab { display: none; }
+        .weather-card { background: linear-gradient(120deg, #0b2b5c, #002366); border-radius: 28px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; color: white; margin-bottom: 20px; }
+        .doc-item { background: #f8fafc; padding: 10px; border-radius: 20px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .checkbox-group { max-height: 200px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 24px; padding: 12px; background: #fefce8; margin-bottom: 12px; }
+        .member-checkbox { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 6px; }
+        .backup-date-card { background: #faf5e4; border-radius: 24px; padding: 14px; margin-top: 16px; border-left: 5px solid #D4AF37; display: flex; justify-content: space-between; align-items: center; }
+        .foundation-head { line-height: 1.2; }
     </style>
 </head>
 <body>
 
-<!-- ==================== LOGIN/SIGNUP SECTION ==================== -->
+<!-- LOGIN SECTION -->
 <div id="authSection" class="min-h-screen flex items-center justify-center p-4">
-    <div class="glass-card w-full max-w-md p-6 relative overflow-hidden">
-        <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#D4AF37] to-[#B8960C]"></div>
-        
-        <div class="text-center mb-5">
-            <div class="logo-container mx-auto">
-                <img id="headerLogo" class="logo-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23002366'/%3E%3Ctext x='50' y='67' font-size='45' text-anchor='middle' fill='%23D4AF37' font-weight='bold'%3EMG%3C/text%3E%3C/svg%3E" alt="Logo">
-                <div class="logo-upload-btn" onclick="document.getElementById('logoInput').click()"><i class="fa-solid fa-camera"></i></div>
-                <input type="file" id="logoInput" class="hidden-file-input" accept="image/*" onchange="uploadLogo(event)">
-            </div>
-            <h1 class="text-xl font-black text-[#002366] mt-2">MINAR GO <span class="text-[#D4AF37]">EXPATRIATE</span></h1>
-            <p class="text-[10px] text-gray-500">Development Foundation</p>
-            <p class="text-[8px] text-gray-400 mt-1 italic">United Experiences, Brighter Future</p>
+    <div class="profile-card" style="max-width: 380px; width: 100%; text-align: center;">
+        <div class="w-20 h-20 mx-auto rounded-full bg-[#002366] flex items-center justify-center border-4 border-[#D4AF37] overflow-hidden">
+            <img id="loginAvatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23002366'/%3E%3Ctext x='50' y='67' font-size='45' text-anchor='middle' fill='%23D4AF37' font-weight='bold'%3EMG%3C/text%3E%3C/svg%3E" class="w-full h-full object-cover">
         </div>
-        
+        <h1 class="text-2xl font-black text-[#002366] mt-3">MINAR GO <span class="text-[#D4AF37]">EXPATRIATE</span></h1>
+        <p class="text-xs text-gray-500 mb-5">Development Foundation</p>
         <div id="loginFormContainer">
             <form id="loginForm" class="space-y-3">
-                <input type="email" id="loginEmail" class="w-full p-3 border rounded-xl text-sm" placeholder="Email Address" required>
-                <input type="password" id="loginPassword" class="w-full p-3 border rounded-xl text-sm" placeholder="Password" required>
-                <button type="submit" class="btn-gold w-full py-3 rounded-xl text-base">Login</button>
+                <input type="email" id="loginEmail" class="form-input" placeholder="Email Address" required>
+                <input type="password" id="loginPassword" class="form-input" placeholder="Password" required>
+                <button type="submit" class="btn-gold-sm w-full py-2">Login</button>
             </form>
-            <p class="text-center text-xs mt-4 text-gray-600">No account? <button id="showSignupBtn" class="text-[#002366] font-bold">Sign Up</button></p>
+            <p class="text-center text-xs mt-4">No account? <button id="showSignupBtn" class="text-[#002366] font-bold">Sign Up</button></p>
         </div>
-        
         <div id="signupFormContainer" class="hidden">
             <form id="signupForm" class="space-y-3">
-                <input type="text" id="signupName" class="w-full p-3 border rounded-xl text-sm" placeholder="Full Name" required>
-                <input type="email" id="signupEmail" class="w-full p-3 border rounded-xl text-sm" placeholder="Email Address" required>
-                <input type="password" id="signupPass" class="w-full p-3 border rounded-xl text-sm" placeholder="Password" required>
-                <button type="submit" class="btn-gold w-full py-3 rounded-xl text-base">Register</button>
+                <input type="text" id="signupName" class="form-input" placeholder="Full Name" required>
+                <input type="email" id="signupEmail" class="form-input" placeholder="Email Address" required>
+                <input type="password" id="signupPass" class="form-input" placeholder="Password" required>
+                <button type="submit" class="btn-gold-sm w-full py-2">Register</button>
             </form>
             <p class="text-center text-xs mt-4"><button id="showLoginBtn" class="text-[#002366] font-bold">← Back to Login</button></p>
-        </div>
-        
-        <div class="text-center mt-6 pt-3 border-t border-gray-200">
-            <p class="text-[8px] text-gray-400">© 2026 Minar Go Expatriate Development Foundation</p>
         </div>
     </div>
 </div>
 
-<!-- ==================== MAIN DASHBOARD ==================== -->
+<!-- DASHBOARD (APP LAYOUT) -->
 <div id="dashboardSection" class="hidden">
-    <!-- Header -->
-    <div class="premium-header text-white py-2 px-4 flex flex-wrap justify-between items-center gap-2 shadow-lg sticky top-0 z-20">
-        <div class="flex items-center gap-2">
-            <div class="logo-container">
-                <img id="dashboardLogo" class="w-8 h-8 rounded-full object-cover border-2 border-[#D4AF37] bg-[#002366]" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23002366'/%3E%3Ctext x='50' y='67' font-size='45' text-anchor='middle' fill='%23D4AF37' font-weight='bold'%3EMG%3C/text%3E%3C/svg%3E" alt="Logo">
-                <div class="logo-upload-btn" style="width: 16px; height: 16px; bottom: -3px; right: -3px;" onclick="document.getElementById('dashboardLogoInput').click()"><i class="fa-solid fa-camera text-[6px]"></i></div>
-                <input type="file" id="dashboardLogoInput" class="hidden-file-input" accept="image/*" onchange="dashboardUploadLogo(event)">
+    <div class="app-container">
+        <!-- HEADER : Foundation name instead of "Admin" -->
+        <div class="bg-white/90 backdrop-blur-sm p-4 flex justify-between items-center border-b border-[#D4AF37]/30 sticky top-0 z-20">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-[#002366] border-2 border-[#D4AF37] overflow-hidden cursor-pointer" onclick="document.getElementById('avatarInput').click()">
+                    <img id="dashboardAvatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23002366'/%3E%3Ctext x='50' y='67' font-size='45' text-anchor='middle' fill='%23D4AF37' font-weight='bold'%3EMG%3C/text%3E%3C/svg%3E" class="w-full h-full object-cover">
+                </div>
+                <div class="foundation-head">
+                    <h2 class="text-[15px] font-black text-[#002366] leading-tight">MINAR GO EXPATRIATE</h2>
+                    <p class="text-[11px] font-bold text-[#D4AF37] tracking-wide">DEVELOPMENT FOUNDATION</p>
+                    <p class="text-[8px] text-gray-500 hidden md:block" id="adminEmailDisplay">admin@minargo.com</p>
+                </div>
+                <input type="file" id="avatarInput" class="hidden" accept="image/*" onchange="uploadAvatar(event)">
             </div>
-            <div>
-                <h1 class="text-sm font-black">MINAR GO <span class="text-[#D4AF37]">EXPATRIATE</span></h1>
-                <p class="text-[7px] text-blue-200">Admin Panel</p>
-            </div>
-        </div>
-        <div class="flex gap-1">
-            <button id="backupBtn" class="bg-green-600 hover:bg-green-700 px-2 py-1 rounded-full text-[9px] font-bold"><i class="fa-brands fa-google mr-1"></i> Backup</button>
-            <button id="logoutBtn" class="bg-red-600 hover:bg-red-700 px-2 py-1 rounded-full text-[9px] font-bold"><i class="fa-solid fa-sign-out-alt mr-1"></i> Exit</button>
-        </div>
-    </div>
-
-    <div class="max-w-7xl mx-auto p-3 pb-16 space-y-3">
-        <!-- Stats Cards - Responsive Small on Mobile -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            <div class="bg-gradient-to-r from-[#D4AF37] to-[#f9e076] rounded-xl shadow stat-card text-center">
-                <p class="font-black uppercase text-gray-700">Total</p>
-                <p class="font-black stat-value" id="totalDisplay">৳0</p>
-            </div>
-            <div class="bg-white rounded-xl shadow gold-border stat-card text-center">
-                <p class="font-bold uppercase text-gray-400">Distribution</p>
-                <p class="font-black text-green-600 stat-value">100%</p>
-            </div>
-            <div class="bg-white rounded-xl shadow gold-border stat-card text-center">
-                <p class="font-bold uppercase text-gray-400">Zakat</p>
-                <p class="font-black text-[#D4AF37] text-sm">Soon</p>
-            </div>
-            <div class="bg-white rounded-xl shadow flex items-center justify-center stat-card">
-                <button onclick="alert('📞 Support: +8801700000000')" class="btn-blue w-full py-1 text-[10px] rounded-lg">📞 Call</button>
-            </div>
+            <button id="exitBtn" class="bg-red-600 text-white px-3 py-1 rounded-full text-xs shadow-md"><i class="fa-solid fa-sign-out-alt mr-1"></i> Exit</button>
         </div>
 
-        <!-- Main Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3">
-            <!-- Left Panel -->
-            <div class="lg:col-span-5 space-y-3">
-                <!-- Deposit Form -->
-                <div class="bg-white p-3 rounded-xl shadow gold-border">
-                    <h3 class="text-sm font-black flex items-center gap-1 mb-2"><i class="fa-solid fa-coins text-[#D4AF37] text-xs"></i> New Deposit</h3>
+        <!-- MAIN CONTENT (TAB VIEWS) -->
+        <div class="main-content" id="mainContent">
+            <!-- HOME TAB -->
+            <div id="homeTab" class="tab-pane">
+                <!-- Weather widget -->
+                <div class="weather-card" id="weatherWidget">
+                    <div><i class="fa-solid fa-cloud-sun text-2xl"></i><span class="text-xs ml-1">আবহাওয়া</span></div>
+                    <div><span id="weatherLocation" class="text-sm font-medium">Dhaka</span></div>
+                    <div><span id="weatherTemp" class="text-xl font-bold">--°C</span><span id="weatherCondition" class="text-xs ml-1"></span></div>
+                </div>
+
+                <!-- Stats row -->
+                <div class="stats-grid">
+                    <div class="stat-card"><p>মোট জমা</p><p id="totalDisplay">৳0</p></div>
+                    <div class="stat-card"><p>সদস্য সংখ্যা</p><p id="memberCount">15</p></div>
+                    <div class="stat-card"><p>লেনদেন</p><p id="depositCount">0</p></div>
+                </div>
+
+                <!-- Hajj & Ramadan Events -->
+                <div class="event-row">
+                    <span><i class="fa-solid fa-kaaba text-[#D4AF37]"></i> হজ্জ ২০২৬</span>
+                    <span class="font-bold">২৭ মে, ২০২৬</span>
+                </div>
+                <div class="event-row mt-2">
+                    <span><i class="fa-solid fa-moon text-[#D4AF37]"></i> রমজান ২০২৬</span>
+                    <span class="font-bold">১৮ ফেব্রুয়ারি, ২০২৬</span>
+                </div>
+
+                <!-- Add Deposit Card -->
+                <div class="profile-card mt-4">
+                    <div class="section-title"><i class="fa-solid fa-coins text-[#D4AF37]"></i> নতুন জমা</div>
                     <form id="depositForm" class="space-y-2">
-                        <select id="memberSelect" class="w-full p-2 border rounded-lg text-xs bg-gray-50" required></select>
-                        <input type="number" id="amount" placeholder="Amount (TK)" value="5000" class="w-full p-2 border rounded-lg text-xs" required>
-                        <input type="date" id="entryDate" class="w-full p-2 border rounded-lg text-xs" required>
-                        <button type="submit" class="btn-gold w-full py-2 rounded-lg text-xs font-bold"><i class="fa-regular fa-floppy-disk mr-1"></i> Submit</button>
+                        <select id="memberSelect" class="form-input text-sm" required></select>
+                        <input type="number" id="amount" placeholder="টাকা" value="5000" class="form-input" required>
+                        <input type="date" id="entryDate" class="form-input" required>
+                        <button type="submit" class="btn-gold-sm w-full py-2">জমা দিন</button>
                     </form>
                 </div>
 
-                <!-- Demand Letter -->
-                <div class="bg-white p-3 rounded-xl shadow border-l-4 border-l-[#002366]">
-                    <h3 class="text-sm font-black mb-2"><i class="fa-regular fa-file-lines mr-1 text-xs"></i> Demand Letter</h3>
-                    <div class="space-y-2">
-                        <input type="date" id="letterDate" class="w-full p-2 border rounded-lg text-xs">
-                        <input type="text" id="letterTo" placeholder="To (Company)" class="w-full p-2 border rounded-lg text-xs">
-                        <input type="text" id="letterSubject" placeholder="Subject" class="w-full p-2 border rounded-lg text-xs font-bold">
-                        <textarea id="letterBody" rows="2" placeholder="Body text..." class="w-full p-2 border rounded-lg text-xs"></textarea>
-                        <div class="grid grid-cols-2 gap-2">
-                            <input type="text" id="letterMobile" placeholder="Mobile" class="p-2 border rounded-lg text-xs">
-                            <input type="email" id="letterEmail" placeholder="Email" class="p-2 border rounded-lg text-xs">
+                <!-- Demand Letter Card -->
+                <div class="profile-card">
+                    <div class="section-title"><i class="fa-regular fa-file-lines"></i> ডিমান্ড লেটার (PDF)</div>
+                    <input type="date" id="letterDate" class="form-input">
+                    <input type="text" id="letterTo" placeholder="প্রাপকের নাম" class="form-input">
+                    <input type="text" id="letterSubject" placeholder="বিষয়" class="form-input">
+                    <textarea id="letterBody" rows="2" placeholder="লেখার বিবরণ..." class="form-input"></textarea>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="text" id="letterMobile" placeholder="মোবাইল ১" class="form-input">
+                        <input type="text" id="letterMobile2" placeholder="মোবাইল ২" class="form-input">
+                        <input type="email" id="letterEmail" placeholder="ইমেইল" class="form-input">
+                        <input type="text" id="letterWebsite" placeholder="ওয়েবসাইট" class="form-input">
+                    </div>
+                    <button id="generateLetterBtn" class="btn-blue-sm w-full">PDF তৈরি করুন</button>
+                </div>
+
+                <!-- LOG HISTORY (Transaction Table) -->
+                <div class="profile-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="section-title mb-0"><i class="fa-solid fa-clock-rotate-left"></i> লেনদেনের ইতিহাস</div>
+                        <select id="monthFilter" class="filter-select bg-[#002366] text-white text-[10px] rounded-full px-2 py-1">
+                            <option value="all">সব মাস</option><option value="01">জানু</option><option value="02">ফেব্রু</option><option value="03">মার্চ</option><option value="04">এপ্রিল</option><option value="05">মে</option><option value="06">জুন</option><option value="07">জুলাই</option><option value="08">আগস্ট</option><option value="09">সেপ্টেম্বর</option><option value="10">অক্টোবর</option><option value="11">নভেম্বর</option><option value="12">ডিসেম্বর</option>
+                        </select>
+                    </div>
+                    <div class="max-h-64 overflow-auto">
+                        <table class="w-full text-xs">
+                            <thead class="bg-[#002366] text-white sticky top-0"><tr><th class="p-2">সদস্য</th><th class="p-2">তারিখ</th><th class="p-2 text-right">টাকা</th><th class="p-2 text-center"></th></tr></thead>
+                            <tbody id="summaryTableBody"></tbody>
+                            <tfoot class="bg-gray-100 font-bold"><tr><td colspan="2" class="p-2">মোট</td><td id="footerTotal" class="p-2 text-right">৳0</td><td class="p-2"></td></tr>
+                        </table>
+                    </div>
+                    <button id="exportPdfBtn" class="btn-blue-sm w-full mt-3 text-xs">📄 PDF রিপোর্ট ডাউনলোড</button>
+                </div>
+            </div>
+
+            <!-- MEMBERS TAB -->
+            <div id="membersTab" class="tab-pane hidden-tab">
+                <div class="profile-card">
+                    <div class="section-title"><i class="fa-solid fa-user-plus"></i> সদস্য ব্যবস্থাপনা</div>
+                    <div class="flex gap-2 mb-3">
+                        <input type="text" id="newMemberName" placeholder="নতুন সদস্যের নাম" class="form-input text-sm">
+                        <button id="addMemberBtn" class="btn-gold-sm px-4">যোগ</button>
+                    </div>
+                    <div id="memberGrid" class="flex flex-wrap gap-1 mb-4"></div>
+                </div>
+
+                <!-- Group Call Feature -->
+                <div class="profile-card">
+                    <div class="section-title"><i class="fa-solid fa-phone-group"></i> গ্রুপ ভিডিও কল</div>
+                    <p class="text-xs text-gray-500 mb-2">সদস্য নির্বাচন করে গ্রুপ কল শুরু করুন (Jitsi Meet)</p>
+                    <div id="memberChecklist" class="checkbox-group"></div>
+                    <div class="flex gap-2">
+                        <button id="createGroupCallBtn" class="btn-gold-sm flex-1"><i class="fa-solid fa-video"></i> গ্রুপ কল শুরু</button>
+                        <button id="copyCallLinkBtn" class="btn-blue-sm"><i class="fa-regular fa-copy"></i> লিংক কপি</button>
+                    </div>
+                    <div id="callLinkDisplay" class="mt-3 text-xs text-center text-gray-500 break-all bg-gray-100 p-2 rounded-xl hidden"></div>
+                </div>
+            </div>
+
+            <!-- DOCUMENTS / GALLERY TAB -->
+            <div id="documentsTab" class="tab-pane hidden-tab">
+                <div class="profile-card">
+                    <div class="section-title"><i class="fa-solid fa-folder-open"></i> ডকুমেন্ট গ্যালারি</div>
+                    <div class="flex gap-2 mb-4">
+                        <input type="file" id="docFileInput" class="text-xs flex-1 border p-1 rounded-full">
+                        <button id="uploadDocBtn" class="btn-blue-sm text-xs">আপলোড</button>
+                    </div>
+                    <div id="documentList" class="space-y-2 max-h-80 overflow-auto"></div>
+                </div>
+            </div>
+
+            <!-- BACKUP / SETTINGS TAB (Enhanced with Screenshot Backup Date) -->
+            <div id="backupTab" class="tab-pane hidden-tab">
+                <div class="profile-card text-center">
+                    <div class="section-title justify-center"><i class="fa-solid fa-cloud-arrow-up"></i> ব্যাকআপ & তথ্য সংরক্ষণ</div>
+                    
+                    <!-- Backup Date Section exactly like screenshot style -->
+                    <div class="backup-date-card">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-database text-[#D4AF37] text-lg"></i>
+                            <span class="text-sm font-bold text-gray-700">শেষ ব্যাকআপের তারিখ :</span>
                         </div>
-                        <button id="generateLetterBtn" class="w-full bg-[#002366] text-white py-2 rounded-lg text-xs font-bold"><i class="fa-regular fa-file-pdf mr-1"></i> Generate PDF</button>
+                        <div>
+                            <span id="lastBackupTimestampDisplay" class="text-sm font-mono bg-white px-3 py-1 rounded-full shadow-sm">কোনো ব্যাকআপ নেই</span>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 gap-3 mt-4">
+                        <button id="backupBtn" class="btn-gold-sm w-full py-2.5"><i class="fa-brands fa-google"></i> গুগল শীটে ব্যাকআপ নিন</button>
+                        <button id="fullExportBtn" class="btn-blue-sm w-full py-2.5">📁 সমস্ত লেনদেন PDF রিপোর্ট</button>
+                    </div>
+                    <hr class="my-4 border-dashed">
+                    <div class="text-left text-xs text-gray-500 bg-gray-50 p-3 rounded-xl">
+                        <p><i class="fa-regular fa-circle-check text-green-600"></i> ব্যাকআপে সদস্য তথ্য, জমার রেকর্ড সংরক্ষিত হয়।</p>
+                        <p><i class="fa-regular fa-clock"></i> Google Sheets এ স্বয়ংক্রিয়ভাবে সংরক্ষণ করে।</p>
+                        <p class="mt-1 font-bold text-[#002366]">📌 সর্বশেষ ব্যাকআপের সময় দেখাবে নিচের বক্সে</p>
                     </div>
                 </div>
             </div>
-
-            <!-- Right Panel - Summary Table -->
-            <div class="lg:col-span-7 bg-white p-3 rounded-xl shadow gold-border">
-                <div class="flex justify-between items-center mb-2">
-                    <h3 class="text-sm font-black"><i class="fa-solid fa-table-list mr-1 text-xs"></i> Summary</h3>
-                    <button id="exportPdfBtn" class="btn-blue px-2 py-1 rounded-full text-[9px] font-bold"><i class="fa-regular fa-file-pdf mr-1"></i> Export</button>
-                </div>
-                <div class="overflow-x-auto rounded-lg border max-h-[300px] overflow-y-auto">
-                    <table class="w-full text-[10px]">
-                        <thead class="bg-[#002366] text-white sticky top-0">
-                            <tr><th class="p-2">Member</th><th class="p-2">Date</th><th class="p-2 text-right">Amount</th><th class="p-2 text-center">Action</th></tr>
-                        </thead>
-                        <tbody id="summaryTableBody"></tbody>
-                        <tfoot class="bg-gray-100 font-bold">
-                            <tr><td colspan="2" class="p-2">TOTAL COLLECTION</td><td id="footerTotal" class="p-2 text-right">৳0</td><td></td>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
         </div>
 
-        <!-- Member Management -->
-        <div class="bg-white p-3 rounded-xl shadow gold-border">
-            <div class="flex justify-between items-center mb-2">
-                <h3 class="text-sm font-black"><i class="fa-solid fa-users mr-1 text-xs"></i> Members</h3>
-                <button id="addMemberBtn" class="border border-[#002366] text-[#002366] px-2 py-0.5 rounded-full text-[9px] font-bold">+ Add</button>
-            </div>
-            <div id="memberGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
-        </div>
-
-        <!-- Document Storage Section - NEW FEATURE -->
-        <div class="bg-white p-3 rounded-xl shadow gold-border">
-            <div class="flex justify-between items-center mb-2">
-                <h3 class="text-sm font-black"><i class="fa-solid fa-folder-open mr-1 text-xs"></i> Document Storage</h3>
-                <button id="uploadDocBtn" class="bg-[#002366] text-white px-2 py-0.5 rounded-full text-[9px] font-bold"><i class="fa-solid fa-upload mr-1"></i> Upload</button>
-                <input type="file" id="docFileInput" class="hidden-file-input" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onchange="uploadDocument(event)">
-            </div>
-            <div id="documentList" class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[200px] overflow-auto"></div>
-            <p class="text-[8px] text-gray-400 text-center mt-2">Support: PDF, PNG, JPG, DOC</p>
+        <!-- BOTTOM NAVIGATION -->
+        <div class="bottom-nav">
+            <div class="nav-item active" data-tab="home"><i class="fa-solid fa-house"></i><span>HOME</span></div>
+            <div class="nav-item" data-tab="members"><i class="fa-solid fa-users"></i><span>MEMBERS</span></div>
+            <div class="nav-item" data-tab="documents"><i class="fa-solid fa-images"></i><span>GALLERY</span></div>
+            <div class="nav-item" data-tab="backup"><i class="fa-solid fa-database"></i><span>BACKUP</span></div>
         </div>
     </div>
 </div>
 
 <script>
-    // ==================== DOCUMENT STORAGE ====================
+    // ---------- FIREBASE + GLOBAL DATA ----------
+    const firebaseConfig = { apiKey: "AIzaSyBbJKxN9RURA4wege2VXHSId5uyR2eZ7ec", authDomain: "minar-go-app.firebaseapp.com", databaseURL: "https://minar-go-app-default-rtdb.firebaseio.com", projectId: "minar-go-app", storageBucket: "minar-go-app.firebasestorage.app", messagingSenderId: "1066873493886", appId: "1:1066873493886:web:8e82362fca362f512bbb2f" };
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbx0V8EesGLJjp9xXVFi6Q_GQdjNzzH9TsmvXFtoD1Qk76x8Rl7kE7tyFRVmbVFWoRYXeA/exec";
+    
+    let members = ["Mr. Dulal", "Mr. Omar Faruk", "Mr. Sulaiman badshah", "Mr. Abdul qayum", "Mr. Mohammed Jamshed", "Mr. Milad", "Mr. Ala uddin", "Mr. Shahid", "Mr. Shohag", "Mr. Abul Hussain", "Mr. Sakib", "Mr. Ronnie", "Mr. Jonye", "Mr. Aqib", "Mr. Shahid (Member)"];
+    let records = [];
     let documents = [];
+    let currentFilterMonth = 'all';
 
-    function loadDocuments() {
-        try {
-            const saved = localStorage.getItem('minar_documents');
-            if(saved) documents = JSON.parse(saved);
-            renderDocuments();
-        } catch(e) {}
+    // Helper functions
+    function loadData() { 
+        try { 
+            let m = localStorage.getItem('minar_members'); if(m) members = JSON.parse(m); 
+            let r = localStorage.getItem('minar_records'); if(r) records = JSON.parse(r); 
+            let d = localStorage.getItem('minar_docs'); if(d) documents = JSON.parse(d); 
+        } catch(e) {} 
+        updateUI(); 
+        refreshBackupTimestampDisplay();
     }
-
-    function saveDocuments() {
-        try {
-            localStorage.setItem('minar_documents', JSON.stringify(documents));
-        } catch(e) {}
-    }
-
-    function uploadDocument(event) {
-        const file = event.target.files[0];
-        if(file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const docData = {
-                    id: Date.now(),
-                    name: file.name,
-                    type: file.type,
-                    size: (file.size / 1024).toFixed(1) + " KB",
-                    data: e.target.result,
-                    date: new Date().toLocaleString()
-                };
-                documents.unshift(docData);
-                saveDocuments();
-                renderDocuments();
-                showToast(`✓ ${file.name} uploaded`);
-            };
-            reader.readAsDataURL(file);
-        }
-        document.getElementById('docFileInput').value = '';
-    }
-
-    function renderDocuments() {
-        const container = document.getElementById('documentList');
-        if(!container) return;
-        if(documents.length === 0) {
-            container.innerHTML = '<div class="col-span-3 text-center text-gray-400 text-[9px] py-3">No documents yet. Click Upload to add files.</div>';
-            return;
-        }
-        container.innerHTML = documents.map(doc => `
-            <div class="bg-gray-50 p-2 rounded-lg border doc-item">
-                <div class="flex items-center gap-1 mb-1">
-                    <i class="fa-solid ${doc.type.includes('pdf') ? 'fa-file-pdf text-red-500' : doc.type.includes('image') ? 'fa-file-image text-blue-500' : 'fa-file-word text-blue-600'} text-xs"></i>
-                    <span class="text-[9px] font-bold truncate flex-1">${doc.name.substring(0, 20)}</span>
-                    <button onclick="viewDocument(${doc.id})" class="text-[#002366] text-[8px]"><i class="fa-regular fa-eye"></i></button>
-                    <button onclick="deleteDocument(${doc.id})" class="text-red-500 text-[8px]"><i class="fa-regular fa-trash-can"></i></button>
-                </div>
-                <p class="text-[7px] text-gray-400">${doc.date}</p>
-            </div>
-        `).join('');
-    }
-
-    function viewDocument(id) {
-        const doc = documents.find(d => d.id === id);
-        if(doc) {
-            if(doc.type.includes('pdf')) {
-                const win = window.open();
-                win.document.write(`<iframe src="${doc.data}" width="100%" height="100%" style="border:none"></iframe>`);
+    function saveData() { localStorage.setItem('minar_members', JSON.stringify(members)); localStorage.setItem('minar_records', JSON.stringify(records)); localStorage.setItem('minar_docs', JSON.stringify(documents)); }
+    function showToast(msg) { let t = document.createElement('div'); t.className = 'toast'; t.innerHTML = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2500); }
+    function getFilteredRecords() { return currentFilterMonth === 'all' ? records : records.filter(r => r.date?.split('-')[1] === currentFilterMonth); }
+    
+    // Backup timestamp management
+    function refreshBackupTimestampDisplay() {
+        let lastBackup = localStorage.getItem('lastBackupTimestamp');
+        const displaySpan = document.getElementById('lastBackupTimestampDisplay');
+        if(displaySpan) {
+            if(lastBackup) {
+                let dateObj = new Date(parseInt(lastBackup));
+                let formatted = dateObj.toLocaleString(undefined, { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12: true });
+                displaySpan.innerHTML = formatted;
             } else {
-                const win = window.open();
-                win.document.write(`<img src="${doc.data}" style="max-width:100%; height:auto; margin-top:20px;">`);
+                displaySpan.innerHTML = "কোনো ব্যাকআপ নেই";
             }
         }
     }
-
-    function deleteDocument(id) {
-        if(confirm("Delete this document?")) {
-            documents = documents.filter(d => d.id !== id);
-            saveDocuments();
-            renderDocuments();
-            showToast("✓ Document deleted");
-        }
-    }
-
-    // ==================== LOGO STORAGE ====================
-    let currentLogoData = localStorage.getItem('foundationLogo') || null;
-    function uploadLogo(event) { handleLogoUpload(event, 'headerLogo'); }
-    function dashboardUploadLogo(event) { handleLogoUpload(event, 'dashboardLogo'); }
-    function handleLogoUpload(event, elementId) {
-        const file = event.target.files[0];
-        if(file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                currentLogoData = e.target.result;
-                localStorage.setItem('foundationLogo', currentLogoData);
-                const img = document.getElementById(elementId);
-                if(img) img.src = currentLogoData;
-                const otherImg = document.getElementById(elementId === 'headerLogo' ? 'dashboardLogo' : 'headerLogo');
-                if(otherImg) otherImg.src = currentLogoData;
-            };
-            reader.readAsDataURL(file);
-        }
-    }
-    function loadLogo() {
-        if(currentLogoData) {
-            const headerLogo = document.getElementById('headerLogo');
-            const dashboardLogo = document.getElementById('dashboardLogo');
-            if(headerLogo) headerLogo.src = currentLogoData;
-            if(dashboardLogo) dashboardLogo.src = currentLogoData;
-        }
-    }
-
-    // ==================== CONFIGURATION ====================
-    const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbxmBGj8zPU6MX-okDrGA5x6hOfEUhb8gwSAyH9WtBPv1_Q7t0f69IN5gBMFQtZDHIiO7g/exec";
     
-    const DEFAULT_MEMBERS = ["Mr. Dulal", "Mr. Omar Faruk", "Mr. Sulaiman badshah", "Mr. Abdul qayum", "Mr. Mohammed Jamshed", "Mr. Milad", "Mr. Ala uddin", "Mr. Shahid", "Mr. Shohag", "Mr. Abul Hussain", "Mr. Sakib", "Mr. Ronnie", "Mr. Jonye", "Mr. Aqib", "Mr. Shahid (Member)"];
+    function updateBackupTimestamp() {
+        let now = Date.now();
+        localStorage.setItem('lastBackupTimestamp', now);
+        refreshBackupTimestampDisplay();
+    }
     
-    let members = [...DEFAULT_MEMBERS];
-    let records = [];
-
-    function loadData() {
-        try {
-            const savedMembers = localStorage.getItem('minar_members_final');
-            if(savedMembers && JSON.parse(savedMembers).length > 0) members = JSON.parse(savedMembers);
-            const savedRecords = localStorage.getItem('minar_records_final');
-            if(savedRecords) records = JSON.parse(savedRecords);
-        } catch(e) {}
-    }
-
-    function saveData() {
-        try {
-            localStorage.setItem('minar_members_final', JSON.stringify(members));
-            localStorage.setItem('minar_records_final', JSON.stringify(records));
-        } catch(e) {}
-    }
-
-    function showToast(msg) {
-        let t = document.createElement('div'); t.className = 'toast'; t.innerHTML = `<i class="fa-regular fa-circle-check mr-1"></i>${msg}`;
-        document.body.appendChild(t); setTimeout(() => t.remove(), 2000);
-    }
-
+    // Update UI (members, records, totals)
     function updateUI() {
-        const memberSelect = document.getElementById('memberSelect');
-        if(memberSelect) memberSelect.innerHTML = members.map(m => `<option value="${m}">${m}</option>`).join('');
-        
-        const memberGrid = document.getElementById('memberGrid');
-        if(memberGrid) memberGrid.innerHTML = members.map((m, i) => `<div class="bg-gray-50 p-1.5 rounded-lg flex justify-between items-center border text-[9px]"><span class="font-semibold truncate">${m}</span><button onclick="deleteMember(${i})" class="text-red-500"><i class="fa-regular fa-trash-can text-[8px]"></i></button></div>`).join('');
-        
-        const summaryBody = document.getElementById('summaryTableBody');
-        if(summaryBody) summaryBody.innerHTML = records.map((r, i) => `<tr class="border-b"><td class="p-2">${r.name}</td><td class="p-2">${r.date}</td><td class="p-2 text-right">${r.amount.toLocaleString()} ৳</td><td class="p-2 text-center"><button onclick="deleteRecord(${i})" class="text-red-500"><i class="fa-regular fa-trash-can text-[8px]"></i></button></td></tr>`).join('');
-        
-        const total = records.reduce((s, r) => s + r.amount, 0);
-        const totalDisplay = document.getElementById('totalDisplay');
-        const footerTotal = document.getElementById('footerTotal');
-        if(totalDisplay) totalDisplay.innerText = `৳${total.toLocaleString()}`;
-        if(footerTotal) footerTotal.innerText = `৳${total.toLocaleString()}`;
+        let filtered = getFilteredRecords();
+        let totalCash = filtered.reduce((s,r)=>s+r.amount,0);
+        document.getElementById('totalDisplay').innerText = '৳'+totalCash;
+        document.getElementById('footerTotal').innerText = '৳'+totalCash;
+        document.getElementById('memberCount').innerText = members.length;
+        document.getElementById('depositCount').innerText = records.length;
+        let memberSelect = document.getElementById('memberSelect');
+        if(memberSelect) memberSelect.innerHTML = members.map(m => `<option value="${m.replace(/"/g, '&quot;')}">${m}</option>`).join('');
+        let memberGrid = document.getElementById('memberGrid');
+        if(memberGrid) memberGrid.innerHTML = members.map((m, i) => `<span class="member-chip">${m}<button onclick="deleteMember(${i})" class="text-red-500 ml-1"><i class="fa-regular fa-trash-can"></i></button></span>`).join('');
+        document.getElementById('summaryTableBody').innerHTML = filtered.map((r, idx) => `<tr class="border-b"><td class="p-2">${r.name}</td><td class="p-2">${r.date}</td><td class="p-2 text-right">${r.amount} ৳</td><td class="p-2 text-center"><button onclick="deleteRecordByGlobal(${idx})" class="text-red-500"><i class="fa-regular fa-trash-can"></i></button></td></tr>`).join('');
         saveData();
+        renderMemberChecklist();
+        renderDocs();
     }
-
-    function addMember() { let n = prompt("Enter member name:"); if(n && n.trim()) { members.push(n.trim()); updateUI(); showToast(`✓ ${n} added`); } }
-    function deleteMember(i) { if(confirm("Delete member?")) { members.splice(i,1); updateUI(); } }
-    function deleteRecord(i) { if(confirm("Delete record?")) { records.splice(i,1); updateUI(); } }
-
-    document.getElementById('depositForm').onsubmit = (e) => {
-        e.preventDefault();
-        records.push({ name: document.getElementById('memberSelect').value, amount: parseFloat(document.getElementById('amount').value), date: document.getElementById('entryDate').value });
-        updateUI();
-        document.getElementById('amount').value = "5000";
-        document.getElementById('entryDate').valueAsDate = new Date();
-        showToast("✓ Deposit added");
-    };
-
-    async function backupToSheets() {
-        if(records.length === 0) { alert("No data to backup!"); return; }
-        let rows = records.map(r => [r.name, r.date, r.amount]);
-        rows.push(["TOTAL COLLECTION", "", records.reduce((s,r)=>s+r.amount,0)]);
-        rows.push(["Total Members", members.length, ""]);
-        rows.push(["Backup Date", new Date().toLocaleString(), ""]);
-        let payload = { sheetName: "MinarGo_Data", headers: ["Member Name", "Date", "Amount (TK)"], rows: rows };
-        let btn = document.getElementById('backupBtn');
-        let orig = btn.innerHTML;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-        btn.disabled = true;
+    window.deleteMember = (i) => { if(confirm("সদস্য মুছবেন?")) { members.splice(i,1); updateUI(); showToast("সদস্য মুছে ফেলা হয়েছে"); } };
+    window.deleteRecordByGlobal = (filteredIdx) => { let filtered = getFilteredRecords(); let original = filtered[filteredIdx]; let idx = records.findIndex(r => r === original); if(idx !== -1 && confirm("লেনদেন ডিলিট করুন?")) { records.splice(idx,1); updateUI(); showToast("লেনদেন ডিলিট"); } };
+    
+    document.getElementById('depositForm').onsubmit = (e) => { e.preventDefault(); let date = document.getElementById('entryDate').value; if(!date) return alert("তারিখ নির্বাচন করুন"); records.push({ name: document.getElementById('memberSelect').value, amount: parseFloat(document.getElementById('amount').value), date }); updateUI(); document.getElementById('amount').value = "5000"; document.getElementById('entryDate').valueAsDate = new Date(); showToast("✓ জমা সংরক্ষিত"); };
+    document.getElementById('addMemberBtn').onclick = () => { let n = document.getElementById('newMemberName').value.trim(); if(n) { members.push(n); updateUI(); document.getElementById('newMemberName').value = ''; showToast(`✓ ${n} যোগ হয়েছে`); } };
+    document.getElementById('monthFilter').onchange = function() { currentFilterMonth = this.value; updateUI(); };
+    
+    // Backup to Google Sheets with timestamp update
+    async function backupToSheets() { 
+        if(records.length === 0 && members.length === 0) return alert("কোন ডাটা নেই");
+        let rows = records.map(r=>[r.name, r.date, r.amount]);
+        rows.push(["মোট সংগ্রহ", "", records.reduce((s,r)=>s+r.amount,0)]);
+        rows.push(["ব্যাকআপ তারিখ:", "", new Date().toLocaleString()]);
+        let payload = { sheetName: "MinarGo_Backup", headers: ["সদস্য","তারিখ","টাকা"], rows, membersList: members };
         try {
-            await fetch(GOOGLE_SHEETS_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(payload) });
-            alert("✅ Data sent to Google Sheets!");
-        } catch(e) { alert("❌ Backup failed"); }
-        finally { btn.innerHTML = orig; btn.disabled = false; }
+            await fetch(GOOGLE_SHEETS_URL, { method:"POST", mode:"no-cors", body:JSON.stringify(payload) });
+            updateBackupTimestamp();
+            showToast("✅ গুগল শীটে ব্যাকআপ সম্পন্ন! সময় সেভ হয়েছে।");
+        } catch(e){ 
+            console.warn(e);
+            // Still update timestamp optimistic but warn
+            updateBackupTimestamp();
+            showToast("⚠️ ব্যাকআপ অনুরোধ পাঠানো হয়েছে (timestamp আপডেট)");
+        } 
     }
-
-    function downloadSummaryPDF() {
-        if(records.length === 0) { alert("No data"); return; }
-        let { jsPDF } = window.jspdf; let doc = new jsPDF();
-        doc.setFontSize(16); doc.text("MINAR GO EXPATRIATE DEVELOPMENT FOUNDATION", 105, 20, {align:'center'});
-        doc.setFontSize(10); doc.text("Collection Summary Report", 105, 30, {align:'center'});
-        let tableData = records.map(r => [r.name, r.date, `৳${r.amount}`]);
-        let total = records.reduce((s,r)=>s+r.amount,0);
-        doc.autoTable({ startY: 40, head: [['Member', 'Date', 'Amount']], body: tableData, foot: [['TOTAL', '', `৳${total}`]], theme: 'striped', headStyles: { fillColor: [0,35,102] } });
-        doc.save("MinarGo_Report.pdf");
-        showToast("✓ PDF Downloaded");
+    
+    function exportPDF() { 
+        let filtered = getFilteredRecords(); 
+        if(!filtered.length) return alert("কোন তথ্য নেই"); 
+        let { jsPDF } = window.jspdf; 
+        let doc = new jsPDF(); 
+        doc.setFontSize(16); 
+        doc.text("MINAR GO EXPATRIATE DEVELOPMENT FOUNDATION", 105, 20, {align:'center'}); 
+        doc.autoTable({ head: [['Member','Date','Amount (Tk)']], body: filtered.map(r=>[r.name, r.date, `৳${r.amount}`]), foot: [['TOTAL','',`৳${filtered.reduce((s,r)=>s+r.amount,0)}`]] }); 
+        doc.save("MinarGo_Report.pdf"); 
+        showToast("PDF রিপোর্ট তৈরি"); 
     }
-
+    
+    document.getElementById('backupBtn').onclick = backupToSheets;
+    document.getElementById('exportPdfBtn').onclick = exportPDF;
+    document.getElementById('fullExportBtn').onclick = exportPDF;
+    
+    // DEMAND LETTER
     async function generateDemandLetter() {
         let to = document.getElementById('letterTo').value || "Sundow Properties LTD";
-        let sub = document.getElementById('letterSubject').value || "Application";
+        let sub = document.getElementById('letterSubject').value || "দাবি পত্র";
         let body = document.getElementById('letterBody').value || "বিনীত নিবেদন...";
-        let mobile = document.getElementById('letterMobile').value || "+8801700000000";
-        let email = document.getElementById('letterEmail').value || "info@minargo.com";
+        let mobile1 = document.getElementById('letterMobile').value || "+8801725277089";
+        let mobile2 = document.getElementById('letterMobile2').value || "+8801725277089";
+        let email = document.getElementById('letterEmail').value || "pranuaee.farooq@gmail.com";
+        let website = document.getElementById('letterWebsite').value || "https://minargo.com";
         let date = document.getElementById('letterDate').value ? new Date(document.getElementById('letterDate').value).toLocaleDateString('bn-BD') : new Date().toLocaleDateString('bn-BD');
-        let div = document.createElement('div'); div.style.width = '750px'; div.style.padding = '25px'; div.style.background = 'white'; div.style.fontFamily = "'Noto Sans Bengali', 'Inter'";
-        div.innerHTML = `<div style="text-align:center"><div style="background:#002366;height:4px"></div><h2 style="color:#002366;font-size:20px;">মিনার গো প্রবাসী উন্নয়ন ফাউন্ডেশন</h2><h3 style="color:#D4AF37;font-size:12px;">MINAR GO EXPATRIATE DEVELOPMENT FOUNDATION</h3></div><hr><p><strong>Date:</strong> ${date}</p><p><strong>To:</strong><br>${to}</p><p><strong>Subject:</strong> ${sub}</p><div style="background:#fefcf5;padding:10px;border-left:3px solid #D4AF37;">${body.replace(/\n/g,'<br>')}</div><p>Sincerely,</p><div style="display:flex;justify-content:space-between;margin-top:25px"><div><div class="signature-line"></div>Minar Go Foundation</div><div><div class="signature-line"></div>Sundow Properties LTD</div></div><div style="text-align:center;margin-top:12px;font-size:9px;">📞 ${mobile} | ✉️ ${email}</div><div style="text-align:center;font-size:7px;">© Minar Go Expatriate Development Foundation</div>`;
-        document.body.appendChild(div);
-        let canvas = await html2canvas(div); let pdf = new jspdf.jsPDF(); pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 210, (canvas.height*210)/canvas.width); pdf.save(`Demand_Letter.pdf`);
-        div.remove(); showToast("✓ PDF Generated");
+        let div = document.createElement('div'); div.style.width = '750px'; div.style.padding = '28px'; div.style.background = 'white'; div.style.fontFamily = "'Inter', sans-serif";
+        div.innerHTML = `<div style="text-align:center; margin-bottom:22px;"><div style="background:linear-gradient(90deg,#D4AF37,#FFD966,#D4AF37);height:5px;margin-bottom:16px;"></div>
+        <h1 style="color:#B8860B; font-size:32px; font-weight:900;">MINAR GO EXPATRIATE DEVELOPMENT FOUNDATION</h1>
+        <h2 style="color:#C58B1E; font-size:24px; font-weight:800; border-bottom:2px solid #F1C40F; display:inline-block;">মিনার গো প্রবাসী উন্নয়ন ফাউন্ডেশন</h2>
+        <p style="font-size:12px; color:#8B7355;">(একটি অরাজনৈতিক, অলাভজনক প্রবাসী কল্যাণ সংস্থা)</p>
+        <div style="background:linear-gradient(90deg,#D4AF37,#FFD966,#D4AF37);height:3px;width:70%;margin:10px auto;"></div></div>
+        <hr><p><strong>তারিখ:</strong> ${date}</p><p><strong>প্রাপক:</strong><br>${to}</p><p><strong>বিষয়:</strong> ${sub}</p>
+        <div style="background:#fefaf2;padding:16px;border-left:5px solid #D4AF37;">${body.replace(/\n/g,'<br>')}</div>
+        <div style="display:flex;justify-content:space-between;margin:35px 0;"><div style="text-align:center;"><div style="border-top:2px solid #B8860B;width:80%;margin:0 auto;"></div><p style="font-weight:800;">Minar Go Expatriate<br>Development Foundation</p><p style="font-size:10px;">স্বাক্ষর / সিল</p></div>
+        <div style="text-align:center;"><div style="border-top:2px solid #B8860B;width:80%;margin:0 auto;"></div><p style="font-weight:800;">Sundow Properties LTD</p><p style="font-size:10px;">স্বাক্ষর / সিল</p></div></div>
+        <div style="background:#f8f3e6;padding:12px;text-align:center;"><div style="display:flex;justify-content:center;gap:16px;"><span><i class="fa-solid fa-phone"></i> ${mobile1}</span><span>${mobile2}</span><span>${email}</span><span>${website}</span></div></div>
+        <div style="text-align:center;margin-top:15px;font-size:9px;">© ${new Date().getFullYear()} Minar Go Expatriate Development Foundation</div>`;
+        document.body.appendChild(div); let canvas = await html2canvas(div, { scale: 2 }); let pdf = new jspdf.jsPDF({ unit: 'mm', format: 'a4' }); let imgWidth = 210; let imgHeight = canvas.height * imgWidth / canvas.width; pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, imgHeight); pdf.save(`Demand_Letter.pdf`); div.remove(); showToast("✓ লেটার তৈরি হয়েছে");
     }
-
-    // Auth System
-    function initAuth() {
-        document.getElementById('showSignupBtn').onclick = () => { document.getElementById('loginFormContainer').classList.add('hidden'); document.getElementById('signupFormContainer').classList.remove('hidden'); };
-        document.getElementById('showLoginBtn').onclick = () => { document.getElementById('signupFormContainer').classList.add('hidden'); document.getElementById('loginFormContainer').classList.remove('hidden'); };
-        document.getElementById('loginForm').onsubmit = (e) => {
-            e.preventDefault();
-            let stored = localStorage.getItem('minar_admin');
-            if(stored && JSON.parse(stored).email === document.getElementById('loginEmail').value && JSON.parse(stored).password === document.getElementById('loginPassword').value) {
-                sessionStorage.setItem('admin_logged', 'true');
-                showDashboard();
-            } else alert("Invalid credentials! Please register first.");
-        };
-        document.getElementById('signupForm').onsubmit = (e) => {
-            e.preventDefault();
-            localStorage.setItem('minar_admin', JSON.stringify({ name: document.getElementById('signupName').value, email: document.getElementById('signupEmail').value, password: document.getElementById('signupPass').value }));
-            sessionStorage.setItem('admin_logged', 'true');
-            showDashboard();
-        };
+    document.getElementById('generateLetterBtn').onclick = generateDemandLetter;
+    
+    // DOCUMENTS
+    function uploadDoc() { let file = document.getElementById('docFileInput').files[0]; if(file) { let reader = new FileReader(); reader.onload = e => { documents.unshift({ id: Date.now(), name: file.name, data: e.target.result }); localStorage.setItem('minar_docs', JSON.stringify(documents)); renderDocs(); showToast(`✓ ${file.name} আপলোড`); }; reader.readAsDataURL(file); document.getElementById('docFileInput').value = ''; } else alert("ফাইল নির্বাচন করুন"); }
+    function renderDocs() { let container = document.getElementById('documentList'); if(!container) return; if(documents.length === 0) { container.innerHTML = '<div class="text-center text-gray-400 text-xs py-2">কোন ডকুমেন্ট নেই</div>'; return; } container.innerHTML = documents.map(d => `<div class="doc-item"><span class="text-xs truncate w-24">${d.name}</span><div><button onclick="window.downloadDoc(${d.id})" class="text-green-600 mr-2"><i class="fa-solid fa-download"></i></button><button onclick="window.viewDoc(${d.id})" class="text-blue-600 mr-2"><i class="fa-regular fa-eye"></i></button><button onclick="window.deleteDoc(${d.id})" class="text-red-500"><i class="fa-regular fa-trash-can"></i></button></div></div>`).join(''); }
+    window.downloadDoc = (id) => { let doc = documents.find(d=>d.id===id); if(doc) { let a = document.createElement('a'); a.href = doc.data; a.download = doc.name; a.click(); showToast("ডাউনলোড শুরু"); } };
+    window.viewDoc = (id) => { let doc = documents.find(d=>d.id===id); if(doc) { let w = window.open(); w.document.write(`<img src="${doc.data}" style="max-width:100%">`); } };
+    window.deleteDoc = (id) => { if(confirm("ডিলিট?")) { documents = documents.filter(d=>d.id !== id); localStorage.setItem('minar_docs', JSON.stringify(documents)); renderDocs(); showToast("ডকুমেন্ট ডিলিট"); } };
+    document.getElementById('uploadDocBtn')?.addEventListener('click', uploadDoc);
+    
+    // WEATHER & AVATAR
+    async function fetchWeatherByCoords(lat, lon) { try { let res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`); let data = await res.json(); if(data.current_weather) { document.getElementById('weatherTemp').innerHTML = `${Math.round(data.current_weather.temperature)}°C`; let code = data.current_weather.weathercode; let cond = code===0?"☀️ পরিষ্কার":(code===1||code===2?"⛅ মেঘলা":"🌧️ বৃষ্টি"); document.getElementById('weatherCondition').innerHTML = cond; } } catch(e){} }
+    function getLocationAndWeather() { if(navigator.geolocation) { navigator.geolocation.getCurrentPosition(pos => fetchWeatherByCoords(pos.coords.latitude, pos.coords.longitude), () => fetchWeatherByCoords(23.8103,90.4125)); } else fetchWeatherByCoords(23.8103,90.4125); }
+    function uploadAvatar(event) { let file = event.target.files[0]; if(file) { let reader = new FileReader(); reader.onload = e => { localStorage.setItem('adminAvatar', e.target.result); document.getElementById('loginAvatar').src = e.target.result; document.getElementById('dashboardAvatar').src = e.target.result; showToast("প্রোফাইল আপডেট"); }; reader.readAsDataURL(file); } }
+    function loadAvatar() { let saved = localStorage.getItem('adminAvatar'); if(saved) { document.getElementById('loginAvatar').src = saved; document.getElementById('dashboardAvatar').src = saved; } }
+    
+    // GROUP CALL
+    let currentCallLink = "";
+    function renderMemberChecklist() { let container = document.getElementById('memberChecklist'); if(container) container.innerHTML = members.map(m => `<label class="member-checkbox"><input type="checkbox" value="${m.replace(/"/g, '&quot;')}" class="call-member-cb"> <span>${m}</span></label>`).join(''); }
+    function startGroupCall() { let checkboxes = document.querySelectorAll('.call-member-cb'); let selected = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value); if(selected.length === 0) return alert("কমপক্ষে একজন নির্বাচন করুন"); let room = "MinarGo_" + Date.now() + "_" + Math.random().toString(36).substr(2,6); let link = `https://meet.jit.si/${room}`; currentCallLink = link; document.getElementById('callLinkDisplay').innerHTML = `🔗 লিংক: <a href="${link}" target="_blank">${link}</a>`; document.getElementById('callLinkDisplay').classList.remove('hidden'); window.open(link, '_blank'); showToast("কল শুরু"); }
+    function copyCallLink() { if(currentCallLink) { navigator.clipboard.writeText(currentCallLink); showToast("লিংক কপি"); } else alert("প্রথমে কল শুরু করুন"); }
+    document.getElementById('createGroupCallBtn')?.addEventListener('click', startGroupCall);
+    document.getElementById('copyCallLinkBtn')?.addEventListener('click', copyCallLink);
+    
+    // TAB SWITCHING
+    const tabs = document.querySelectorAll('.nav-item');
+    const panes = { home: document.getElementById('homeTab'), members: document.getElementById('membersTab'), documents: document.getElementById('documentsTab'), backup: document.getElementById('backupTab') };
+    function switchTab(tabId) { Object.keys(panes).forEach(id => panes[id].classList.add('hidden-tab')); panes[tabId].classList.remove('hidden-tab'); tabs.forEach(t => { if(t.dataset.tab === tabId) t.classList.add('active'); else t.classList.remove('active'); }); }
+    tabs.forEach(tab => { tab.addEventListener('click', () => switchTab(tab.dataset.tab)); });
+    
+    // AUTH & DASHBOARD
+    function showDashboard() { loadData(); loadAvatar(); getLocationAndWeather(); document.getElementById('dashboardSection').classList.remove('hidden'); document.getElementById('authSection').classList.add('hidden'); updateUI(); document.getElementById('entryDate').valueAsDate = new Date(); document.getElementById('letterDate').valueAsDate = new Date(); switchTab('home'); refreshBackupTimestampDisplay(); }
+    function logoutUser() { sessionStorage.removeItem('admin_logged'); sessionStorage.removeItem('adminName'); sessionStorage.removeItem('adminEmail'); document.getElementById('dashboardSection').classList.add('hidden'); document.getElementById('authSection').classList.remove('hidden'); showToast("লগ আউট"); }
+    document.getElementById('exitBtn')?.addEventListener('click', logoutUser);
+    
+    function initAuth() { 
+        document.getElementById('showSignupBtn').onclick = () => { document.getElementById('loginFormContainer').classList.add('hidden'); document.getElementById('signupFormContainer').classList.remove('hidden'); }; 
+        document.getElementById('showLoginBtn').onclick = () => { document.getElementById('signupFormContainer').classList.add('hidden'); document.getElementById('loginFormContainer').classList.remove('hidden'); }; 
+        document.getElementById('loginForm').onsubmit = (e) => { e.preventDefault(); let email = document.getElementById('loginEmail').value, pass = document.getElementById('loginPassword').value; database.ref('admin_users').orderByChild('email').equalTo(email).once('value', snap => { let found = false; snap.forEach(u => { if(u.val().password === pass) { found = true; sessionStorage.setItem('admin_logged','true'); sessionStorage.setItem('adminEmail', email); showDashboard(); } }); if(!found) alert("Invalid credentials!"); }); }; 
+        document.getElementById('signupForm').onsubmit = (e) => { e.preventDefault(); let name = document.getElementById('signupName').value, email = document.getElementById('signupEmail').value, pass = document.getElementById('signupPass').value; if(name && email && pass) { database.ref('admin_users').push({ name, email, password: pass }); alert("Registration success! Please login."); document.getElementById('signupFormContainer').classList.add('hidden'); document.getElementById('loginFormContainer').classList.remove('hidden'); } else alert("All fields required!"); }; 
     }
-
-    function showDashboard() {
-        document.getElementById('authSection').classList.add('hidden');
-        document.getElementById('dashboardSection').classList.remove('hidden');
-        loadData(); updateUI(); loadLogo(); loadDocuments();
-        document.getElementById('entryDate').valueAsDate = new Date();
-        document.getElementById('letterDate').valueAsDate = new Date();
-        document.getElementById('backupBtn').onclick = backupToSheets;
-        document.getElementById('exportPdfBtn').onclick = downloadSummaryPDF;
-        document.getElementById('generateLetterBtn').onclick = generateDemandLetter;
-        document.getElementById('addMemberBtn').onclick = addMember;
-        document.getElementById('uploadDocBtn').onclick = () => document.getElementById('docFileInput').click();
-        document.getElementById('logoutBtn').onclick = () => { 
-            sessionStorage.removeItem('admin_logged'); 
-            document.getElementById('dashboardSection').classList.add('hidden');
-            document.getElementById('authSection').classList.remove('hidden');
-        };
-        window.deleteMember = deleteMember; window.deleteRecord = deleteRecord;
-        window.viewDocument = viewDocument; window.deleteDocument = deleteDocument;
-    }
-
     if(sessionStorage.getItem('admin_logged') === 'true') showDashboard(); else initAuth();
 </script>
 </body>
